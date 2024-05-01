@@ -31,3 +31,11 @@ variable "node_group" {
     value = string
   })
 }
+
+variable "custom_themes" {
+  type = object({
+    enabled    = bool
+    repository = string
+    branch     = string
+  })
+}

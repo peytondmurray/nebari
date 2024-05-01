@@ -32,6 +32,11 @@ resource "helm_release" "keycloak" {
     name  = "initial_root_password"
     value = var.initial_root_password
   }
+
+  set {
+    name  = "custom_themes"
+    value = var.custom_themes
+  }
 }
 
 

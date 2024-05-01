@@ -31,6 +31,7 @@ class InputVars(schema.Base):
     initial_root_password: str
     overrides: List[str]
     node_group: Dict[str, str]
+    custom_themes: Dict[str, str]
 
 
 @contextlib.contextmanager
@@ -141,10 +142,17 @@ def random_secure_string(
     return "".join(secrets.choice(chars) for i in range(length))
 
 
+class Themes(schema.Base):
+    enabled: bool = False
+    repository: str = ""
+    branch: str = "main"
+
+
 class Keycloak(schema.Base):
     initial_root_password: str = Field(default_factory=random_secure_string)
     overrides: Dict = {}
     realm_display_name: str = "Nebari"
+    custom_themes: Themes = Themes()
 
 
 auth_enum_to_model = {
@@ -233,6 +241,7 @@ class KubernetesKeycloakStage(NebariTerraformStage):
             node_group=stage_outputs["stages/02-infrastructure"]["node_selectors"][
                 "general"
             ],
+            custom_themes=json.dumps(self.config.security.keycloak.custom_themes),
         ).model_dump()
 
     def check(
