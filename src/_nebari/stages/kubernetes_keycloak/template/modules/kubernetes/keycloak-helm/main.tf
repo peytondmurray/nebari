@@ -33,9 +33,12 @@ resource "helm_release" "keycloak" {
     value = var.initial_root_password
   }
 
-  set {
-    name  = "custom_themes"
-    value = var.custom_themes
+  dynamic "set" {
+    for_each = var.custom_themes
+    content {
+      name  = "custom_themes.${set.key}"
+      value = set.value
+    }
   }
 }
 

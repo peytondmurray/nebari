@@ -8,7 +8,7 @@ import sys
 import time
 from typing import Any, Dict, List, Optional, Type, Union
 
-from pydantic import Field, ValidationInfo, field_validator
+from pydantic import Field, ValidationInfo, field_validator, model_validator
 
 from _nebari.stages.base import NebariTerraformStage
 from _nebari.stages.tf_objects import (
@@ -31,7 +31,7 @@ class InputVars(schema.Base):
     initial_root_password: str
     overrides: List[str]
     node_group: Dict[str, str]
-    custom_themes: Dict[str, str]
+    custom_themes: Dict[str, Union[bool, str]]
 
 
 @contextlib.contextmanager
@@ -144,15 +144,23 @@ def random_secure_string(
 
 class Themes(schema.Base):
     enabled: bool = False
-    repository: str = ""
-    branch: str = "main"
+    repository: Optional[str] = ""
+    branch: Optional[str] = "main"
+
+    @model_validator(mode="after")
+    def validate_fields(self) -> "Themes":
+        if self.enabled and not (self.repository and self.branch):
+            raise ValueError(
+                "When 'enabled' is set to True, a repository must be specified."
+            )
+        return self
 
 
 class Keycloak(schema.Base):
     initial_root_password: str = Field(default_factory=random_secure_string)
     overrides: Dict = {}
     realm_display_name: str = "Nebari"
-    custom_themes: Themes = Themes()
+    custom_themes: Themes = Field(default_factory=lambda: Themes())
 
 
 auth_enum_to_model = {
@@ -241,7 +249,7 @@ class KubernetesKeycloakStage(NebariTerraformStage):
             node_group=stage_outputs["stages/02-infrastructure"]["node_selectors"][
                 "general"
             ],
-            custom_themes=json.dumps(self.config.security.keycloak.custom_themes),
+            custom_themes=self.config.security.keycloak.custom_themes.model_dump(),
         ).model_dump()
 
     def check(

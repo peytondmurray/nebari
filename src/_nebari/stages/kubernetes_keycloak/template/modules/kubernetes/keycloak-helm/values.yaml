@@ -52,7 +52,7 @@ extraInitContainers: |
     volumeMounts:
       - name: metrics-plugin
         mountPath: /data
-  {{ if .Values.custom_themes_repo.enabled }}
+  {{ if .Values.custom_themes.enabled }}
   - env:
     - name: GIT_SYNC_REPO
       value: {{ .Values.custom_themes.repository }}
@@ -85,7 +85,7 @@ extraInitContainers: |
 extraVolumeMounts: |
   - name: metrics-plugin
     mountPath: /opt/jboss/keycloak/providers/
-  {{ if .Values.custom_themes_repo.enabled }}
+  {{ if .Values.custom_themes.enabled }}
   - mountPath: /opt/data/custom-themes
     name: custom-themes
   {{ end }}
