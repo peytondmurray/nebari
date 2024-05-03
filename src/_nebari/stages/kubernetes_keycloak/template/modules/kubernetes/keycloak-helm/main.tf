@@ -40,6 +40,7 @@ resource "helm_release" "keycloak" {
       value = set.value
     }
   }
+
 }
 
 
